@@ -56,13 +56,14 @@ def export_entries(
     }
     items, _ = service.list_entries(
         filters=filters, keyword=keyword, status=status, page=1, size=1_000_000)
+    derived = list(getattr(service, "DERIVED_FIELDS", []))
     output = io.StringIO()
     output.write("\ufeff")
     writer = csv.writer(output, lineterminator="\n")
-    writer.writerow(["id", *service.LIST_FIELDS, "status"])
+    writer.writerow(["id", *service.LIST_FIELDS, "status", *derived])
     for item in items:
         values = [item.get("id"), *(item.get(field, "") for field in service.LIST_FIELDS),
-                  item.get("status", "")]
+                  item.get("status", ""), *(item.get(field, "") for field in derived)]
         writer.writerow([
             "'" + str(value) if str(value or "").startswith(("=", "+", "-", "@")) else value
             for value in values

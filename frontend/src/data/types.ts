@@ -14,6 +14,8 @@ export type ModuleMeta = {
   entity: string
   desc: string
   fields: string[]
+  /** 只读派生列：由后端从主键发布快照计算，不参与登记表单。 */
+  derivedFields?: string[]
   statuses: string[]
   actions: string[]
   actionTargets: Record<string, string>

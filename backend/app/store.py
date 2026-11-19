@@ -218,6 +218,13 @@ class SnapshotEngine:
             if s["module"] == module and s["entry_id"] == entry_id
         ]
 
+    def list_module_snapshots(self, module: str) -> list[dict[str, Any]]:
+        """按创建顺序返回模块下的全部快照，供跨条目读取最新版本。"""
+        return [
+            s for s in self._snapshots.values()
+            if s["module"] == module
+        ]
+
     def diff_snapshots(self, snap_id_a: str, snap_id_b: str) -> dict[str, Any] | None:
         snap_a = self._snapshots.get(snap_id_a)
         snap_b = self._snapshots.get(snap_id_b)
@@ -319,6 +326,16 @@ class ArtifactRegistry:
 class Store:
     def __init__(self) -> None:
         self._tables: dict[str, list[dict[str, Any]]] = {
+            name: [dict(row) for row in rows] for name, rows in SEED_ROWS.items()
+        }
+        self.channel = DataChannel()
+        self.recovery = FailureRecovery()
+        self.snapshot = SnapshotEngine()
+        self.artifacts = ArtifactRegistry()
+
+    def reset(self) -> None:
+        """重置为初始示例数据，供测试与演示环境复用同一个存储单例。"""
+        self._tables = {
             name: [dict(row) for row in rows] for name, rows in SEED_ROWS.items()
         }
         self.channel = DataChannel()
